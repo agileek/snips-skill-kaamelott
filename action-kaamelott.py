@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
+import configparser
 import random
 import uuid
 
@@ -8,6 +9,12 @@ from os import listdir
 from os.path import isfile, join
 
 sound_files = [f for f in listdir("sounds") if isfile(join("sounds", f))]
+config = configparser.ConfigParser()
+config.read("config.ini")
+
+mqtt_host = config["secret"]["mqtt_host"]
+mqtt_port = config["secret"].getint("mqtt_port")
+site_id = config["secret"]["site_id"]
 
 
 def on_connect(client, userdata, flags, rc):
@@ -28,7 +35,7 @@ def on_message(client, userdata, msg):
             imagestring = sound_file.read()
             byte_array = bytearray(imagestring)
             generated_id = uuid.uuid4().hex
-            client.publish("hermes/audioServer/default/playBytes/" + generated_id, byte_array)
+            client.publish(f"hermes/audioServer/{site_id}/playBytes/" + generated_id, byte_array)
             client.publish("hermes/dialogueManager/endSession", json.dumps({"sessionId": payload["sessionId"]}))
 
 
@@ -36,7 +43,7 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("localhost", 1883, 60)
+client.connect(mqtt_host, mqtt_port, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
