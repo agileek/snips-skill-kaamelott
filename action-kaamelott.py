@@ -35,7 +35,7 @@ def on_message(client, userdata, msg):
             imagestring = sound_file.read()
             byte_array = bytearray(imagestring)
             generated_id = uuid.uuid4().hex
-            client.publish(f"hermes/audioServer/{site_id}/playBytes/" + generated_id, byte_array)
+            client.publish("hermes/audioServer/" + site_id + "/playBytes/" + generated_id, byte_array)
             client.publish("hermes/dialogueManager/endSession", json.dumps({"sessionId": payload["sessionId"]}))
 
 
